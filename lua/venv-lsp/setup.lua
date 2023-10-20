@@ -45,7 +45,7 @@ function M._lspconfig_modify_setup(config)
 
       local virtualenv_path = M._get_virtualenv_path(root_dir)
       if not virtualenv_path then
-        return opts
+        return new_config
       end
 
       if not new_config.cmd_env then
