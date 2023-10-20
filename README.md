@@ -1,2 +1,2 @@
 # venv-lsp.nvim
-Automatically handle python virualenvs for LSP
+Automatically handle Python venvs for LSP
