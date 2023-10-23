@@ -1,34 +1,5 @@
+local venv = require 'venv-lsp.venv'
 local util = require 'venv-lsp.util'
-local poetry = require 'venv-lsp.venv_managers.poetry'
-
-local M = {}
-
-function M._get_virtualenv_path(path)
-  if poetry.should_use(path) then
-    return util.with_cache(poetry.get_virtualenv_path, 'virtualenv_path', true)(path)
-  end
-  -- TODO: add other checks to support other virtualenv managers
-  -- reset LRU
-  util._reset_LRU()
-  return nil
-end
-
-function M._set_virtualenv_vars(envvars, virtualenv_path)
-  if not envvars then
-    envvars = {}
-  end
-  -- always override VIRTUAL_ENV var even if it is explicitly added
-  envvars.VIRTUAL_ENV = virtualenv_path
-
-  if not envvars.PATH then
-    -- TODO: could also cache
-    envvars.PATH = os.getenv('PATH')
-  end
-  -- append to PATH
-  -- TODO: fix for different systems (working on macos)
-  envvars.PATH = virtualenv_path .. '/bin:' .. envvars.PATH
-  return envvars
-end
 
 -- lspconfig override
 function M._lspconfig_modify_setup(config)
@@ -43,7 +14,7 @@ function M._lspconfig_modify_setup(config)
         _on_new_config(new_config, root_dir)
       end
 
-      local virtualenv_path = M._get_virtualenv_path(root_dir)
+      local virtualenv_path = venv.get_virtualenv_path(root_dir)
       if not virtualenv_path then
         return new_config
       end
@@ -51,7 +22,7 @@ function M._lspconfig_modify_setup(config)
       if not new_config.cmd_env then
         new_config.cmd_env = {}
       end
-      new_config.cmd_env = M._set_virtualenv_vars(new_config.cmd_env, virtualenv_path)
+      new_config.cmd_env = venv.set_virtualenv_vars(new_config.cmd_env, virtualenv_path)
     end
     return _setup(opts)
   end
@@ -73,10 +44,11 @@ function M._null_ls_modify_builtin_with_fn(builtin)
       -- null-ls always runs after other main lsp client
       -- using LRU saved venv for the buffer
       local virtualenv_path = util.cache_LRU
+      print('test: ', virtualenv_path)
       if not virtualenv_path then
         return env
       end
-      return M._set_virtualenv_vars(env, virtualenv_path)
+      return venv.set_virtualenv_vars(env, virtualenv_path)
     end
     return _with(opts)
   end
@@ -115,7 +87,8 @@ function M.inject_to_lspconfig(lspconfig)
     if not filetypes or not util.list_contains(filetypes, 'python') then
       return config
     end
-    return M._lspconfig_modify_setup(config)
+    config = M._lspconfig_modify_setup(config)
+    return config
   end
 
   setmetatable(lspconfig, mt)

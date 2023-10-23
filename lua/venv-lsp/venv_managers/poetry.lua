@@ -5,6 +5,9 @@ local M = {}
 function M.get_virtualenv_path(dir_path)
   local cmd = 'poetry -C ' .. dir_path .. ' env info -p'
   local virtualenv_path = vim.fn.trim(vim.fn.system(cmd))
+  if vim.v.shell_error then
+    return nil
+  end
   return virtualenv_path
 end
 
