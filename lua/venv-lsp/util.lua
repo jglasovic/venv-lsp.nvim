@@ -1,5 +1,5 @@
 local uv = vim.loop
-local M = {}
+local M = { cache_map = {} }
 
 function M.list_contains(list, item)
   for _, value in ipairs(list) do
@@ -14,9 +14,6 @@ function M.path_exists(filename)
   local stat = uv.fs_stat(filename)
   return stat and stat.type or false
 end
-
-M.cache_map = {}
-M._LRU = nil
 
 M.with_cache = function(cb, cache_key)
   if not M.cache_map[cache_key] then
@@ -34,16 +31,16 @@ M.with_cache = function(cb, cache_key)
   end
 end
 
-function M.set_LRU(venv)
-  M._LRU = venv
-end
+function M.modify_metatable(tbl, modify)
+  local _mt = getmetatable(tbl)
+  local mt = {}
+  function mt:__index(k)
+    local item = _mt:__index(k)
+    local result = modify(item)
+    return result or item
+  end
 
-function M.get_LRU()
-  return M._LRU
-end
-
-function M.reset_LRU()
-  M.cache_LRU = nil
+  setmetatable(tbl, mt)
 end
 
 return M
