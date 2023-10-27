@@ -1,60 +1,47 @@
-local util = require 'venv-lsp.util'
+local lspconfig = require 'lspconfig'
+local pyright = require 'venv-lsp.lspconfig.pyright'
 local venv = require 'venv-lsp.venv'
-local config = require 'venv-lsp.config'
-
 local M = {}
 
-function M._on_new_config(on_new_config)
-  return function(new_config, root_dir)
-    if on_new_config then
-      on_new_config(new_config, root_dir)
-    end
-    if config.activate_global then
-      venv.deactivate_virtualenv()
-    end
-    local virtualenv_path = venv.get_virtualenv_path(root_dir)
-    print('on_new_config')
-    print(vim.inspect(virtualenv_path))
-    if config.activate_global then
-      venv.activate_virtualenv(virtualenv_path)
-    else
-      new_config.cmd_env = venv.set_virtualenv_tbl(new_config.cmd_env, virtualenv_path)
-    end
+M.lsp = {
+  ['pyright'] = pyright.on_new_config
+  -- TODO: add others
+}
+
+-- on_attach for new buffer, save buffer's activated venv
+function M.on_attach(_, _)
+  if vim.env.VIRTUAL_ENV then
+    vim.b.VIRTUAL_ENV = vim.env.VIRTUAL_ENV
   end
 end
 
-function M._on_attach(on_attach)
-  return function(client, bufnr)
-    print('on_attach')
-    print(bufnr)
-    if on_attach then
-      on_attach(client, bufnr)
-    end
-  end
-end
-function M._setup(setup)
-  return function(opts)
-    if not opts then
-      opts = {}
-    end
-    opts.on_new_config = M._on_new_config(opts.on_new_config)
-    opts.on_attach = M._on_attach(opts.on_attach)
-    return setup(opts)
-  end
+function M.autocmd_venv()
+  local group = vim.api.nvim_create_augroup('VenvLsp', { clear = true })
+  -- on BufEnter activate virtual env if exists and not activated yet
+  vim.api.nvim_create_autocmd('BufEnter', {
+    group = group,
+    pattern = { "*.py" },
+    callback = function(_)
+      local buf_venv = vim.b.VIRTUAL_ENV
+      if buf_venv and buf_venv ~= vim.env.VIRTUAL_ENV then
+        venv.deactivate_virtualenv()
+        venv.activate_virtualenv(buf_venv)
+      end
+    end,
+  })
 end
 
-function M._modify_config(opts)
-  local filetypes = vim.tbl_get(opts, 'document_config', 'default_config', 'filetypes')
-  if not filetypes or not util.list_contains(filetypes, 'python') then
-    return opts
+function M.on_setup(config)
+  local on_new_config = M.lsp[config.name]
+  if on_new_config then
+    config.on_new_config = lspconfig.util.add_hook_after(config.on_new_config, on_new_config)
+    config.on_attach = lspconfig.util.add_hook_after(config.on_attach, M.on_attach)
+    M.autocmd_venv()
   end
-  opts.setup = M._setup(opts.setup)
-  return opts
 end
 
 function M.init()
-  local lspconfig = require 'lspconfig'
-  return util.modify_metatable(lspconfig, M._modify_config)
+  lspconfig.util.on_setup = lspconfig.util.add_hook_after(lspconfig.util.on_setup, M.on_setup)
 end
 
 return M

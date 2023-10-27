@@ -1,5 +1,6 @@
 # venv-lsp.nvim
 A small wrapper around [nvim-lspconfig](https://github.com/neovim/nvim-lspconfig) that automatically handles python virtualenvs
+NOTE: Currently supports `pyright` lsp with `poetry` virtual environments
 
 ## Usage
 The easiest way to use this plugin is to call `init` method before any `lspconfig` setup
@@ -13,34 +14,16 @@ local lspconfig = require 'lspconfig'
 
 ## How it works
 There are plugins like [poet-v](https://github.com/petobens/poet-v), [vim-virtualenv](https://github.com/jmcantrell/vim-virtualenv), [vim-pipenv](https://github.com/PieterjanMontens/vim-pipenv)
-that automatically detects and activates venv globally, this plugin DOESN'T do that.
-Instead, it just sets it for the LSP process. This works nicely for the monorepo projects that have multiple
-virtualenvs where different parts of the project belong to a different venv. Jumping between buffers in such
-monorepo where LSP detects different root dir by patterns and spawns process can have issues with plugins above if the LSP process starts before the new venv is activated globally. 
-That would require `:LspRestart` to properly start the process with the new venv activated.
-This plugin ensures that the LSP process has the right virtualenv activated just for that process.
+that automatically detects and activates virtualenv for the current buffer. 
+The problem with those plugins is that if the lsp process has started before the right virtualenv is activated, python executable for that process is not the one from the virtual environment. To fix that it requires manual process restart (:LspRestart)
+This plugin uses `on_new_config` lspconfig hook to detect and activate virtualenv before the buffer is attached to the lsp client, providing the right python path to the lsp.
+The plugin works nicely for the monorepo projects that have multiple virtualenvs where different parts of the project belong to a different venv. 
+Jumping between buffers in such monorepo where LSP detects different root dir by patterns (workspaces) is not going to produce issues like with the mentioned plugins above.
 
-`lspconfig` has a hook called `on_new_config` that triggers anytime it detects another root dir by patterns. This plugin injects its own `on_new_config`.
-It is going to be injected only for those LSPs that has support for the `python` filetype and are explicitly setup.
-For example:
-```lua
-lspconfig.pyright.setup(...)
-```
-It is going to inject it just for `pyright` and nothing else.
-Also, it will not interfere with another explicitly added `on_new_config` to the setup
-```lua
-lspconfig.pyright.setup({ 
-    on_new_config = function(new_config, new_dir_path) 
-        -- user's custom config modifications
-        end
-    })
-```
-
-Injected `on_new_config` tries to detect if the virtualenv for the `new_dir_path` exists, if it does, it is going to provide `cwd_env` to the `new_config` with two new values for the process.
-It sets `VIRTUAL_ENV` env var and it prepends `PATH` env var with the detected virtualenv path. That way the LSP process is going to have activated venv.
-Also, it will not interfere with the user's custom `cwd_env` if provided.
-
-
-
-
+## TODO
+ - [x] Support `pipenv` venvs
+ - [x] Support `pyenv` venvs
+ - [x] Support for `jedi-language-server` 
+ - [x] Support for `pylsp` 
+ - [x] Support for `pylyzer` 
 
