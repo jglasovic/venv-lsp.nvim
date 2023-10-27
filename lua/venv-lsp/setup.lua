@@ -1,4 +1,3 @@
-local lspconfig = require 'venv-lsp.lspconfig'
 local M = {}
 
 function M.init()
@@ -15,7 +14,8 @@ function M.init()
     )
     return
   end
-  lspconfig.init()
+  local venv_lspconfig = require 'venv-lsp.lspconfig'
+  venv_lspconfig.init()
 
   M.initialized = true
 end
