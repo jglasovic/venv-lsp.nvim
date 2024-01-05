@@ -20,4 +20,13 @@ function M.init()
   M.initialized = true
 end
 
+function M.active_virtualenv()
+  local virtualenv = vim.env.VIRTUAL_ENV
+  if virtualenv then
+    local _, _, venv_name = string.find(virtualenv, '[/\\]([^/\\]+)$')
+    return venv_name or ''
+  end
+  return ''
+end
+
 return M

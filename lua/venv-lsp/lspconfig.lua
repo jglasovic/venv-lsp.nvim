@@ -1,41 +1,40 @@
 local lspconfig = require 'lspconfig'
-local pyright = require 'venv-lsp.lspconfig.pyright'
 local venv = require 'venv-lsp.venv'
+local pyright = require 'venv-lsp.lspconfig.pyright'
 local M = {}
 
-M.lsp = {
-  ['pyright'] = pyright.on_new_config
+M.update_config = {
+  ['pyright'] = pyright.update_config
   -- TODO: add others
 }
 
--- on_attach for new buffer, save buffer's activated venv
-function M.on_attach(_, _)
-  if vim.env.VIRTUAL_ENV then
-    vim.b.VIRTUAL_ENV = vim.env.VIRTUAL_ENV
+function M.on_new_config(update_config)
+  return function(new_config, root_dir)
+    venv.deactivate_virtualenv()
+    local virtualenv_path = venv.get_virtualenv_path(root_dir)
+    if virtualenv_path then
+      update_config(new_config, virtualenv_path)
+      venv.activate_virtualenv(virtualenv_path)
+    end
   end
 end
 
 function M.autocmd_venv()
-  local group = vim.api.nvim_create_augroup('VenvLsp', { clear = true })
-  -- on BufEnter activate virtual env if exists and not activated yet
+  if M.autocmd_set then
+    return
+  end
   vim.api.nvim_create_autocmd('BufEnter', {
-    group = group,
+    group = vim.api.nvim_create_augroup('VenvLsp', { clear = true }),
     pattern = { "*.py" },
-    callback = function(_)
-      local buf_venv = vim.b.VIRTUAL_ENV
-      if buf_venv and buf_venv ~= vim.env.VIRTUAL_ENV then
-        venv.deactivate_virtualenv()
-        venv.activate_virtualenv(buf_venv)
-      end
-    end,
+    callback = venv.activate_buffer,
   })
+  M.autocmd_set = true
 end
 
 function M.on_setup(config)
-  local on_new_config = M.lsp[config.name]
-  if on_new_config then
-    config.on_new_config = lspconfig.util.add_hook_after(config.on_new_config, on_new_config)
-    config.on_attach = lspconfig.util.add_hook_after(config.on_attach, M.on_attach)
+  local update_config = M.update_config[config.name]
+  if update_config then
+    config.on_new_config = lspconfig.util.add_hook_after(config.on_new_config, M.on_new_config(update_config))
     M.autocmd_venv()
   end
 end
