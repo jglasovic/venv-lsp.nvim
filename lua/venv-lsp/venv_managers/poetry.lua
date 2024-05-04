@@ -3,9 +3,9 @@ local util = require 'venv-lsp.util'
 local M = {}
 
 function M.get_virtualenv_path(dir_path)
-  local cmd = 'poetry -C ' .. dir_path .. ' env info -p'
+  local cmd = 'poetry -C ' .. dir_path .. ' env info -p 2>/dev/null'
   local virtualenv_path = vim.fn.trim(vim.fn.system(cmd))
-  if vim.v.shell_error ~= 0 then
+  if vim.v.shell_error ~= 0 or not virtualenv_path then
     return nil
   end
   return virtualenv_path
