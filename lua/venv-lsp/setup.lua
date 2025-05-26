@@ -32,14 +32,21 @@ function M._init_lsp() -- for nvim v0.11
       lsp_config = lsp.default_config
     end
 
-    local on_new_config = M._on_new_config(lsp.update_config)
+    -- not working correctly if the settings is missing from the config
+    if not lsp_config.settings then
+      lsp_config.settings = {}
+    end
+
     local original_before_init = lsp_config.before_init or nil
+    local before_init = M._on_new_config(lsp.update_config)
+
     lsp_config['before_init'] = function(params, config)
       if original_before_init then
         original_before_init(params, config)
       end
-      on_new_config(config, params.rootPath)
+      before_init(config, params.rootPath)
     end
+
     vim.lsp.config(name, lsp_config)
   end
   commands.init_auto_venv()
