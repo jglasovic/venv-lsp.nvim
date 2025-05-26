@@ -1,5 +1,4 @@
-local util = require 'venv-lsp.util'
-local path_util = require('lspconfig.util').path
+local utils = require 'venv-lsp.utils'
 
 local M = {}
 
@@ -14,9 +13,12 @@ end
 
 -- if poetry is executable and path has poetry.lock - use poetry
 function M.should_use(path)
-  local pyproject_path = path_util.join(path, 'poetry.lock')
-  return util.with_cache(vim.fn.executable, 'exec')('poetry') and
-      util.with_cache(util.path_exists, 'poetry_root')(pyproject_path)
+  if not path or path == vim.NIL then
+    return false
+  end
+  local pyproject_path = utils.path_join(path, 'poetry.lock')
+  return utils.with_cache(vim.fn.executable, 'exec')('poetry') and
+      utils.with_cache(utils.path_exists, 'poetry_root')(pyproject_path)
 end
 
 return M
