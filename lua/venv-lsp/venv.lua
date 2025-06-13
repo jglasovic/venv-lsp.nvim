@@ -41,6 +41,13 @@ end
 function M.activate_virtualenv(virtualenv_path)
   vim.env.VIRTUAL_ENV = virtualenv_path
   vim.env.PATH = utils.path_join(virtualenv_path, M._venv_path_suffix) .. vim.env.PATH
+  print("activate virtualenv")
+  print(vim.b.VIRTUAL_ENV)
+  print(vim.env.VIRTUAL_ENV)
+  print("=============")
+  if not vim.b.VIRTUAL_ENV or vim.b.VIRTUAL_ENV == M._unknown_venv then
+    vim.b.VIRTUAL_ENV = vim.env.VIRTUAL_ENV
+  end
 end
 
 function M.deactivate_virtualenv()
@@ -51,6 +58,10 @@ function M.deactivate_virtualenv()
 end
 
 function M.activate_buffer()
+  print("activate buffer")
+  print(vim.b.VIRTUAL_ENV)
+  print(vim.env.VIRTUAL_ENV)
+  print("=============")
   -- if buffer doesn't have VIRTUAL_ENV var
   if not vim.b.VIRTUAL_ENV then
     vim.b.VIRTUAL_ENV = vim.env.VIRTUAL_ENV or M._unknown_venv

@@ -1,4 +1,5 @@
 local venv = require 'venv-lsp.venv'
+local cache = require 'venv-lsp.cache'
 
 local M = {
   -- By default auto venv detection is active
@@ -14,7 +15,7 @@ M.init_user_cmd = function()
   end
 
   vim.api.nvim_create_user_command(
-    'VenvAutoDisable',
+    'VenvLspAutoDisable',
     function()
       M.disabled_auto_venv = true
       print('Auto VIRTUAL_ENV detection is disabled!')
@@ -23,11 +24,33 @@ M.init_user_cmd = function()
   )
 
   vim.api.nvim_create_user_command(
-    'VenvAutoEnable',
+    'VenvLspAutoEnable',
     function()
       M.disabled_auto_venv = false
       print('Auto VIRTUAL_ENV detection is enabled!')
     end,
+    { nargs = 0 }
+  )
+
+  vim.api.nvim_create_user_command(
+    'VenvLspRemapRootDir',
+    cache.add_root_dir,
+    { nargs = 0 }
+  )
+  vim.api.nvim_create_user_command(
+    'VenvLspRemoveRootDirRemap',
+    cache.remove_root_dir,
+    { nargs = 0 }
+  )
+
+  vim.api.nvim_create_user_command(
+    'VenvLspAddVenv',
+    cache.add_venv,
+    { nargs = 0 }
+  )
+  vim.api.nvim_create_user_command(
+    'VenvLspRemoveVenv',
+    cache.remove_venv,
     { nargs = 0 }
   )
 

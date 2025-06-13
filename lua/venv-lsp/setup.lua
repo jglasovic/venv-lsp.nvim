@@ -2,6 +2,8 @@ local utils = require 'venv-lsp.utils'
 local venv = require 'venv-lsp.venv'
 local commands = require 'venv-lsp.commands'
 local lspconfig = require 'venv-lsp.lspconfig'
+local config_utils = require('venv-lsp.config')
+local cache = require('venv-lsp.cache')
 
 local M = {}
 
@@ -11,11 +13,22 @@ function M._on_new_config(update_config)
       return
     end
 
-    local previous_venv = vim.env.VIRTUAL_ENV
-    -- deactivate previous venv before searching for the new one
-    venv.deactivate_virtualenv()
-    -- if cannot find the new venv, fallback to the previous one
-    local virtualenv_path = venv.get_virtualenv_path(root_dir) or previous_venv
+    -- check if the cache exists
+    local virtualenv_path
+    local chached_venv_path = cache.get_venv(root_dir)
+    if chached_venv_path then
+      virtualenv_path = tostring(chached_venv_path)
+    else
+      local previous_venv = vim.env.VIRTUAL_ENV
+      -- deactivate previous venv before searching for the new one
+      venv.deactivate_virtualenv()
+      local new_virtualenv_path = venv.get_virtualenv_path(root_dir)
+      if new_virtualenv_path then
+        cache.set_venv(root_dir, new_virtualenv_path)
+      end
+      -- if cannot find the new venv, fallback to the previous one
+      virtualenv_path = new_virtualenv_path or previous_venv
+    end
     -- set and activate if venv exists
     if virtualenv_path then
       update_config(new_config, virtualenv_path)
@@ -31,22 +44,42 @@ function M._init_lsp() -- for nvim v0.11
     if not lsp_config then
       lsp_config = lsp.default_config
     end
-
-    -- not working correctly if the settings is missing from the config
+    -- not working correctly if the settings are missing from the config
     if not lsp_config.settings then
       lsp_config.settings = {}
     end
 
+    local original_root_markers = lsp_config.root_markers or nil
+    local original_root_dir = lsp_config.root_dir or nil
     local original_before_init = lsp_config.before_init or nil
-    local before_init = M._on_new_config(lsp.update_config)
 
-    lsp_config['before_init'] = function(params, config)
+    local custom_before_init = M._on_new_config(lsp.update_config)
+    -- setup before_init
+    lsp_config.before_init = function(params, config)
       if original_before_init then
         original_before_init(params, config)
       end
-      before_init(config, params.rootPath)
+      custom_before_init(config, params.rootPath)
     end
 
+    lsp_config.root_dir = function(bufnr, cb)
+      local custom_cb = function(root_dir)
+        -- check cache
+        local mapped_root_dir = cache.get_root_dir(root_dir)
+        cb(mapped_root_dir or root_dir)
+      end
+      if original_root_dir then
+        return original_root_dir(bufnr, custom_cb)
+      end
+      local root_dir
+      if original_root_markers then
+        root_dir = vim.fs.root(bufnr, original_root_markers)
+      end
+      if not root_dir then
+        root_dir = vim.fn.getcwd() -- fallback to cwd if missing
+      end
+      return custom_cb(root_dir)
+    end
     vim.lsp.config(name, lsp_config)
   end
   commands.init_auto_venv()
@@ -64,11 +97,14 @@ function M._init_lspconfig()
   lspconfig_pkg.util.on_setup = lspconfig_pkg.util.add_hook_after(lspconfig_pkg.util.on_setup, on_setup)
 end
 
-function M.init()
+function M.init(custom_config)
   if M.initialized then
     return
   end
-
+  -- setup config
+  config_utils.update_config(custom_config)
+  -- setup cache
+  cache.init()
   -- for nvim v0.11
   if utils.is_0_11_or_higher_nvim_version then
     M._init_lsp()
@@ -80,9 +116,7 @@ function M.init()
     end
     M._init_lspconfig()
   end
-
   commands.init_user_cmd()
-
   M.initialized = true
 end
 
