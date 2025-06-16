@@ -9,7 +9,7 @@ M.update_config = function(config, virtualenv_path)
 end
 
 M.default_config = {
-  cmd = { 'basedpyright-langserver', '--stdio' },
+  cmd = { 'pyright-langserver', '--stdio' },
   filetypes = { 'python' },
   root_markers = {
     'pyproject.toml',
@@ -18,17 +18,18 @@ M.default_config = {
     'requirements.txt',
     'Pipfile',
     'pyrightconfig.json',
+    'pyvenv.cfg',
     '.git',
   },
   settings = {
-    basedpyright = {
+    python = {
       analysis = {
         autoSearchPaths = true,
         useLibraryCodeForTypes = true,
         diagnosticMode = 'openFilesOnly',
       },
     },
-  },
+  }
 }
 
 return M

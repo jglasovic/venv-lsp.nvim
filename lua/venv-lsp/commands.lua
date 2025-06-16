@@ -1,24 +1,23 @@
 local venv = require 'venv-lsp.venv'
 local cache = require 'venv-lsp.cache'
+local logger = require 'venv-lsp.logger'
+local config = require 'venv-lsp.config'
 
 local M = {
-  -- By default auto venv detection is active
-  disabled_auto_venv = false,
-  --
-  _autocmd_venv_added = false,
-  _usercmd_added = false
+  _autocmd_venv_init = false,
+  _usercmd_init = false
 }
 
 M.init_user_cmd = function()
-  if M._usercmd_added then
+  if M._usercmd_init then
     return
   end
 
   vim.api.nvim_create_user_command(
     'VenvLspAutoDisable',
     function()
-      M.disabled_auto_venv = true
-      print('Auto VIRTUAL_ENV detection is disabled!')
+      config.set_disabled_auto_venv(true)
+      logger.info('Auto VIRTUAL_ENV detection is disabled!')
     end,
     { nargs = 0 }
   )
@@ -26,20 +25,9 @@ M.init_user_cmd = function()
   vim.api.nvim_create_user_command(
     'VenvLspAutoEnable',
     function()
-      M.disabled_auto_venv = false
-      print('Auto VIRTUAL_ENV detection is enabled!')
+      config.set_disabled_auto_venv(false)
+      logger.info('Auto VIRTUAL_ENV detection is enabled!')
     end,
-    { nargs = 0 }
-  )
-
-  vim.api.nvim_create_user_command(
-    'VenvLspRemapRootDir',
-    cache.add_root_dir,
-    { nargs = 0 }
-  )
-  vim.api.nvim_create_user_command(
-    'VenvLspRemoveRootDirRemap',
-    cache.remove_root_dir,
     { nargs = 0 }
   )
 
@@ -59,20 +47,21 @@ end
 
 
 function M.init_auto_venv()
-  if M._autocmd_venv_added then
+  if M._autocmd_venv_init then
     return
   end
   vim.api.nvim_create_autocmd('BufEnter', {
     group = vim.api.nvim_create_augroup('VenvLsp', { clear = true }),
     pattern = { "*.py" },
     callback = function()
-      if M.disabled_auto_venv then
+      local config_dict = config.get()
+      if config_dict.disabled_auto_venv then
         return
       end
       venv.activate_buffer()
     end,
   })
-  M._autocmd_venv_added = true
+  M._autocmd_venv_init = true
 end
 
 return M
