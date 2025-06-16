@@ -104,7 +104,7 @@ require("venv-lsp").setup({
 - `disabled_auto_venv`: (boolean) If true, disables automatic virtual environment detection and activation.
   Default: `false`
 - `cache_json_path`: (string) Path to the JSON file used for caching venv locations per project.  
-  Default: `vim.fn.stdpath("cache") .. "/venv_lsp/cache.json"`
+  Default: `utils.path_join(vim.fn.stdpath("cache"), 'venv_lsp', 'cache.json')`
 
 ## How it works
 

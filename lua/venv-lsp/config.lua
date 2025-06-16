@@ -1,5 +1,6 @@
 local logger = require('venv-lsp.logger')
-local fallback_cache_json_path = vim.fn.stdpath("cache") .. '/venv_lsp/cache.json'
+local utils = require('venv-lsp.utils')
+local fallback_cache_json_path = utils.path_join(vim.fn.stdpath("cache"), 'venv_lsp', 'cache.json')
 
 local M = {
   _config = {
