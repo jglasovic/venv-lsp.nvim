@@ -9,8 +9,10 @@ A Neovim plugin for automatic Python virtual environment detection and activatio
 
 - **Neovim** 0.8 or newer (Zero-config for 0.11+)
 - **Python** 3.7+
-- For automatic venv detection: at least one supported Python venv manager (`poetry` or `pyenv`)  
-  *(Alternatively, you can manually set root dir and venv path mappings via command — no supported venv manager required for manual setup.)*
+- For Neovim < 0.11: [nvim-lspconfig](https://github.com/neovim/nvim-lspconfig) is required
+- At least one supported Python language server (`pyright`, `basedpyright`, or `pyrefly`) must be installed
+- For automatic venv detection: at least one supported Python venv manager (`poetry` or `pyenv`)
+  *(Alternatively, you can manually set root dir and venv path mappings via command — no supported venv manager required for manual venv setup.)*
 
 ## Features
 
@@ -23,9 +25,11 @@ A Neovim plugin for automatic Python virtual environment detection and activatio
 
 ## Installation
 
+Use your favorite plugin manager. 
+
 #### lazy.nvim
 
-Use your favorite plugin manager. Example with `lazy.nvim`:
+Example with `lazy.nvim`:
 
 ```lua
 {
@@ -115,7 +119,7 @@ require("venv-lsp").setup({
 There are plugins like [poet-v](https://github.com/petobens/poet-v), [vim-virtualenv](https://github.com/jmcantrell/vim-virtualenv), [vim-pipenv](https://github.com/PieterjanMontens/vim-pipenv) (which inspired this plugin) that automatically detect and activate a virtualenv for the current buffer.  
 The problem with those plugins is that if the LSP process starts before the right virtual environment is activated, the Python executable for that process is not the one from the activated virtual environment.
 
-This plugin uses 3 hooks for work:
+This plugin uses 3 hooks to work:
 
 | Neovim v0.11 and newer      | Neovim < 0.11 and lspconfig     |
 |-----------------------------|---------------------------------|
@@ -127,8 +131,8 @@ This plugin uses 3 hooks for work:
 - `before_init`/`on_new_config`: Checks cache for venv with root dir value, if not found, tries to detect it for that root. When found, it caches the venv and activates it.
 - `on_attach`: Sets venv value to the buffer's local var for easier activation on jumps between buffers.
 
-This plugin works nicely for monorepo projects that have multiple virtualenvs where different parts of the project belong to a different venv.  
-Jumping between buffers in such a monorepo where LSP detects different root dirs is not going to produce issues like those mentioned above.
+This plugin works well for monorepo projects that have multiple virtualenvs, where different parts of the project belong to different venvs.  
+Jumping between buffers in such a monorepo where LSP detects different root dirs will not produce issues like those mentioned above.
 
 ## Supported LSPs
 
@@ -163,7 +167,7 @@ A: Use `:VenvLspAddVenv` and follow the prompts to enter your root directory and
 Alternatively, you can manually add mappings to the cache JSON file if you prefer.
 
 **Q: Can I use this with a venv manager other than poetry or pyenv?**  
-A: Yes! You can manually map root directories to venv paths using `:VenvLspAddVenv`, or by editing the cache JSON file directly. The plugin will activate the venv accordingly.
+A: Yes! You can manually map `<root_dir>` to venv path using `:VenvLspAddVenv`, or by editing the cache JSON file directly. The plugin will activate the venv accordingly.
 
 **Q: Does this work with monorepos?**  
 A: Yes! Each buffer uses the correct venv based on its root directory.
