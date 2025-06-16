@@ -54,7 +54,11 @@ For Neovim 0.11 and newer:
 
 ```lua
 require("venv-lsp").setup()
+
+-- Don't forget to enable your Python language server
+vim.lsp.enable('pyright')
 ```
+
 
 Your Python LSPs (e.g., `pyright`) will automatically use the correct virtualenv.
 
