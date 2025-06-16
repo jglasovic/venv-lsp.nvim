@@ -72,7 +72,7 @@ lspconfig.pyright.setup({})
 
 ### Manual LSP Configuration
 
-If you need to manually configure any of the supported Python language servers, do so before calling `require("venv-lsp").setup()`:
+If you need to configure any of the supported Python language servers manually, do so before calling `require("venv-lsp").setup()`:
 
 ```lua
 vim.lsp.config('pyright', { root_markers = {'.git'} })
@@ -85,9 +85,9 @@ require("venv-lsp").setup()
 
 - `:VenvLspAutoDisable` — Disable automatic virtual environment detection.
 - `:VenvLspAutoEnable` — Enable automatic virtual environment detection.
-- `:VenvLspAddVenv` — Manually add a <root dir path> → <virtual environment path> mapping.
+- `:VenvLspAddVenv` — Manually add a `<root dir path>` → `<virtual environment path>` mapping.
   (You will be prompted to enter the root dir path and venv path.)
-- `:VenvLspRemoveVenv` — Remove the manually set <root dir path> → <virtual environment path> mapping.
+- `:VenvLspRemoveVenv` — Remove the manually set `<root dir path>` → `<virtual environment path>` mapping.
   (You will be prompted to select the root path to remove.)
 
 ## Configuration
@@ -109,7 +109,7 @@ require("venv-lsp").setup({
 ## How it works
 
 There are plugins like [poet-v](https://github.com/petobens/poet-v), [vim-virtualenv](https://github.com/jmcantrell/vim-virtualenv), [vim-pipenv](https://github.com/PieterjanMontens/vim-pipenv) (which inspired this plugin) that automatically detect and activate a virtualenv for the current buffer.  
-The problem with those plugins is that if the LSP process has started before the right virtualenv is activated, the Python executable for that process is not the one from the activated virtual environment.
+The problem with those plugins is that if the LSP process starts before the right virtual environment is activated, the Python executable for that process is not the one from the activated virtual environment.
 
 This plugin uses 3 hooks for work:
 
@@ -120,11 +120,11 @@ This plugin uses 3 hooks for work:
 | on_attach                   | on_attach                       |
 
 - `root_dir`: First checks if the buffer belongs to any of the known (cached) venvs, if not, falls back to the default/provided `root_dir` implementation (root_markers) for detecting venv root dir.
-- `before_init`/`on_new_config`: Checks cache for venv with root dir value, if not found tries to detect it for that root. When found, caches the venv and activates it.
+- `before_init`/`on_new_config`: Checks cache for venv with root dir value, if not found, tries to detect it for that root. When found, it caches the venv and activates it.
 - `on_attach`: Sets venv value to the buffer's local var for easier activation on jumps between buffers.
 
 This plugin works nicely for monorepo projects that have multiple virtualenvs where different parts of the project belong to a different venv.  
-Jumping between buffers in such a monorepo where LSP detects different root dirs is not going to produce issues like with the mentioned plugins above.
+Jumping between buffers in such a monorepo where LSP detects different root dirs is not going to produce issues like those mentioned above.
 
 ## Supported LSPs
 
@@ -150,7 +150,7 @@ Jumping between buffers in such a monorepo where LSP detects different root dirs
 - **Want to force a venv for a project?**  
   Use `:VenvLspAddVenv` to manually add a venv for your project.
 
-*If you don't want to bother with venv auto detection, you can always add or remove `<root_dir>:<venv_path>` mappings via the `:VenvLspAddVenv` command. The plugin will respect that value and work for all subdirectory Python files with that venv.*
+*If you don't want to bother with venv auto detection, you can always add `<root_dir>:<venv_path>` mappings via the `:VenvLspAddVenv` command. The plugin will respect that value and work for all subdirectory Python files with that venv.*
 
 ## FAQ
 
