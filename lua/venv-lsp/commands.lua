@@ -42,6 +42,15 @@ M.init_user_cmd = function()
     { nargs = 0 }
   )
 
+  vim.api.nvim_create_user_command(
+    'VenvLspCacheFile',
+    function()
+      local config_dict = config.get()
+      vim.cmd.edit(config_dict.cache_json_path)
+    end,
+    { nargs = 0 }
+  )
+
   M._usercmd_added = true
 end
 

@@ -151,14 +151,16 @@ function M.setup(user_config)
   -- setup cache
   cache.init()
   -- for nvim v0.11
-  if utils.is_0_11_or_higher_nvim_version then
+  if utils.nvim_is_0_11_or_higher then
     M._init_lsp()
-  else
-    local success_lsp_config, lspconfig_pkg = pcall(require, 'lspconfig')
-    if not success_lsp_config then
-      logger.error("Missing `lspconfig`!")
-      return
-    end
+  end
+
+  local success_lsp_config, lspconfig_pkg = pcall(require, 'lspconfig')
+  if not success_lsp_config and not utils.nvim_is_0_11_or_higher then
+    logger.error("Missing required `lspconfig`!")
+    return
+  end
+  if success_lsp_config then
     M._init_lspconfig(lspconfig_pkg)
   end
   commands.init_user_cmd()

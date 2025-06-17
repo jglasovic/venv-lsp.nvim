@@ -135,18 +135,20 @@ end
 ---@return string|nil
 M.get_venv = function(root_dir)
   local cache = M._get_cache()
-  return vim.tbl_get(cache, root_dir)
+  return cache[root_dir]
 end
 
 ---@return nil
 M.set_venv = function(root_dir, venv_path)
-  root_dir = utils.normalize_dir_path(root_dir)
-  if not utils.path_exists(root_dir) then
-    return
-  end
-  local venv_python_path = utils.path_join(venv_path, utils.python_path_suffix)
-  if not utils.path_exists(venv_python_path) then
-    return
+  if venv_path then
+    root_dir = utils.normalize_dir_path(root_dir)
+    if not utils.path_exists(root_dir) then
+      return
+    end
+    local venv_python_path = utils.path_join(venv_path, utils.python_path_suffix)
+    if not utils.path_exists(venv_python_path) then
+      return
+    end
   end
   M._venv_cache[root_dir] = venv_path
   M._write_cache_to_file_debounced()
@@ -175,9 +177,15 @@ M.add_venv = function()
 end
 
 M.remove_venv = function()
+  local cache = M._get_cache()
   vim.ui.select(
-    vim.tbl_keys(M._get_cache()),
-    { prompt = "Remove " },
+    vim.tbl_keys(cache),
+    {
+      prompt = "Remove: ",
+      format_item = function(root_dir)
+        return root_dir .. " => " .. cache[root_dir]
+      end,
+    },
     function(root_dir)
       if not root_dir or root_dir == "" then
         return
