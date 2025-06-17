@@ -1,3 +1,11 @@
 local venv_lsp_setup = require 'venv-lsp.setup'
 
-return { init = venv_lsp_setup.init, active_virtualenv = venv_lsp_setup.active_virtualenv }
+local M = {}
+
+M.active_virtualenv = venv_lsp_setup.get_active_virtualenv
+M.setup = venv_lsp_setup.setup
+
+--- @deprecated use `setup(<config: table|nil>)` instead of `init(<config: table|nil>)`
+M.init = venv_lsp_setup.setup
+
+return M
