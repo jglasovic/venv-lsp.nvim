@@ -1,4 +1,4 @@
-local venv_lsp_setup = require("venv-lsp.setup")
+local venv_lsp_setup = require('venv-lsp.setup')
 
 local M = {}
 
