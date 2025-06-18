@@ -45,7 +45,7 @@ end
 M._read_cache_from_file = function(json_path)
   local f = io.open(json_path, 'r')
   if not f then
-    logger.log('Cannot open file :' .. json_path, vim.log.levels.ERROR)
+    logger.error('Cannot open file :' .. json_path)
     return nil
   end
   local content = f:read('*a')
@@ -68,11 +68,11 @@ M._write_cache_to_file_debounced = function()
     M._write_cache_to_file_async(config_dict.cache_json_path, M._venv_cache, function(err_msg, _)
       M._pending_write = false
       if err_msg then
-        logger.log(err_msg, vim.log.levels.ERROR)
+        logger.error(err_msg)
       end
       -- print success_msg
       -- if _ then
-      --   logger.log(_, vim.log.levels.INFO)
+      --   logger.info(_)
       -- end
     end)
   end, 500)

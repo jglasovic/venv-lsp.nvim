@@ -29,7 +29,7 @@ M.update = function(config)
   local json_path = vim.get(config, 'cache_json_path')
   if json_path and not M._validate_json_path(json_path) then
     config.cache_json_path = fallback_cache_json_path
-    logger.log('Using fallback path ' .. fallback_cache_json_path, vim.log.levels.WARN)
+    logger.warn('Using fallback path ' .. fallback_cache_json_path)
   end
   M._config = vim.tbl_deep_extend('keep', config, M._config)
 end
