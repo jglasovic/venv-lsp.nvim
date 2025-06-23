@@ -1,6 +1,8 @@
 local venv = require('venv-lsp.venv')
 local M = {}
 
+---@param config table
+---@param virtualenv_path string
 M.update_config = function(config, virtualenv_path)
   -- there are some problems with using tbl_extand or tbl_deep_extand so appending pythonPath like this:
   config.settings = config.settings or {}

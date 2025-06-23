@@ -183,7 +183,8 @@ MIT License
 
 ## TODO
 
-- [ ] Support `pipenv` venvs
+- [ ] Add venv search as in [vscode-python](https://github.com/microsoft/vscode-python/tree/2faa16417084e4b3f9a448127f361dcb336d3ce6/src/client/pythonEnvironments/common/environmentManagers)
+- [ ] fzf.vim, fzf-lua, telescope.nvim support for venv search
 - [ ] Support for `jedi-language-server`
 - [ ] Support for `pylsp`
 - [ ] Support for `pylyzer`

@@ -1,4 +1,3 @@
-local utils = require('venv-lsp.utils')
 local venv = require('venv-lsp.venv')
 local commands = require('venv-lsp.commands')
 local lsp_configs = require('venv-lsp.lsp_config')
@@ -8,6 +7,8 @@ local logger = require('venv-lsp.logger')
 
 local M = {}
 
+---@param update_config fun(new_config: table, root_dir: string): nil
+---@return fun(new_config: table, root_dir: string): nil
 function M._update_config_wrapper(update_config)
   return function(new_config, root_dir)
     local config_dict = config.get()
@@ -40,6 +41,8 @@ function M._update_config_wrapper(update_config)
   end
 end
 
+---@param original_on_attach fun(client: table, bufnr: integer)|nil
+---@return fun(client: table, bufnr: integer)
 function M._custom_on_attach(original_on_attach)
   return function(client, bufnr)
     if original_on_attach then
@@ -53,6 +56,9 @@ function M._custom_on_attach(original_on_attach)
   end
 end
 
+---@param original_before_init fun(params: table, client_config: table)|nil
+---@param update_config fun(client_config: table, root_dir: string): nil
+---@return fun(params: table, client_config: table)
 function M._custom_before_init(original_before_init, update_config)
   return function(params, client_config)
     if original_before_init then
@@ -62,6 +68,9 @@ function M._custom_before_init(original_before_init, update_config)
   end
 end
 
+---@param original_root_dir fun(bufnr: integer, cb: fun(root_dir: string)): any
+---@param root_markers string[]
+---@return fun(bufnr: integer, cb: fun(root_dir: string?): any): any
 function M._custom_root_dir(original_root_dir, root_markers)
   return function(bufnr, cb)
     -- try if buffer is for any cached venv root_dir
@@ -101,6 +110,10 @@ function M._init_lsp() -- for nvim v0.11
 end
 
 --- @deprecated use `vim.lsp.config` in Nvim 0.11+ instead.
+---@param original_root_dir fun(fname: string): string|nil
+---@param util table
+---@param root_markers string[]
+---@return fun(fname: string): string|nil
 function M._custom_lspconfig_root_dir(original_root_dir, util, root_markers)
   return function(fname)
     -- try if buffer is for any cached venv root_dir
@@ -115,6 +128,8 @@ function M._custom_lspconfig_root_dir(original_root_dir, util, root_markers)
   end
 end
 
+---@param lspconfig_pkg table
+---@return nil
 --- @deprecated use `vim.lsp.config` in Nvim 0.11+ instead.
 function M._init_lspconfig(lspconfig_pkg)
   local on_setup = function(client_config)
@@ -132,6 +147,8 @@ function M._init_lspconfig(lspconfig_pkg)
   lspconfig_pkg.util.on_setup = lspconfig_pkg.util.add_hook_after(lspconfig_pkg.util.on_setup, on_setup)
 end
 
+---@param user_config table|nil
+---@return nil
 function M.setup(user_config)
   if M.initialized then
     return
@@ -142,13 +159,13 @@ function M.setup(user_config)
   end
   -- setup cache
   cache.init()
-  -- for nvim v0.11
-  if utils.nvim_is_0_11_or_higher then
+  local nvim_v0_11 = vim.fn.has('nvim-0.11') == 1
+  if nvim_v0_11 then
     M._init_lsp()
   end
 
   local success_lsp_config, lspconfig_pkg = pcall(require, 'lspconfig')
-  if not success_lsp_config and not utils.nvim_is_0_11_or_higher then
+  if not success_lsp_config and not nvim_v0_11 then
     logger.error('Missing required `lspconfig`!')
     return
   end
@@ -159,6 +176,7 @@ function M.setup(user_config)
   M.initialized = true
 end
 
+---@return string
 function M.get_active_virtualenv()
   local virtualenv = vim.env.VIRTUAL_ENV
   if virtualenv then
