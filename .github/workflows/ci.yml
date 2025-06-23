@@ -16,6 +16,9 @@ jobs:
 
   docs:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
     name: pandoc to vimdoc
     if: ${{ github.ref == 'refs/heads/jglasovic/venv-selector' }}
     steps:
