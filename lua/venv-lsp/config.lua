@@ -1,8 +1,12 @@
 local Path = require('venv-lsp.common.path')
-local logger = require('venv-lsp.logger')
+local logger = require('venv-lsp.common.logger')
 
 local M = {
-  _cache_json_path = Path:new(vim.fn.stdpath('cache'), 'venv_lsp', 'cache.json'),
+  _cache_json_path = Path(vim.fn.stdpath('cache'), 'venv_lsp', 'cache.json'),
+  ---@class Config
+  ---@field cache_json_path string|nil
+  ---@field disable_cache boolean
+  ---@field disable_auto_venv boolean
   _config = {
     -- path set by user
     cache_json_path = nil,
@@ -18,7 +22,7 @@ function M.get_cache_json_path()
   return M._cache_json_path
 end
 
----@param config table
+---@param config Config
 ---@return nil
 M.update = function(config)
   if type(config) ~= 'table' then
@@ -29,7 +33,7 @@ M.update = function(config)
   -- if updating cache_json_path, validate path
   local cache_json_path_value = vim.tbl_get(config, 'cache_json_path')
   if cache_json_path_value then
-    local cache_json_path = Path:new(cache_json_path_value)
+    local cache_json_path = Path(cache_json_path_value)
     if cache_json_path:is_ext('.json') then
       M._cache_json_path = cache_json_path
     else
@@ -41,7 +45,7 @@ M.update = function(config)
   M._config = vim.tbl_deep_extend('force', M._config, config)
 end
 
----@return table
+---@return Config
 M.get = function()
   return M._config
 end

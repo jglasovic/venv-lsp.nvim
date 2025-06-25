@@ -1,6 +1,6 @@
 local fs = require('venv-lsp.common.fs')
 local config = require('venv-lsp.config')
-local logger = require('venv-lsp.logger')
+local logger = require('venv-lsp.common.logger')
 
 local M = {
   _mem_cache = vim.empty_dict(),
@@ -76,13 +76,16 @@ end
 ---Get the venv cache, reading from file if needed.
 ---@return table<string, string|nil>
 M.get_venv_cache = function()
+  local config_dict = config.get()
   if M._initial_read then
     return M._venv_cache
   end
-  local cache_json_path = config.get_cache_json_path()
-  local data = M._read_cache_from_file(cache_json_path:get())
-  if data then
-    M._venv_cache = data
+  if not config_dict.disable_cache then
+    local cache_json_path = config.get_cache_json_path()
+    local data = M._read_cache_from_file(cache_json_path:get())
+    if data then
+      M._venv_cache = data
+    end
   end
   M._initial_read = true
   return M._venv_cache
@@ -128,14 +131,16 @@ end
 ---@return nil
 M.set_venv = function(root_dir, virtualenv_path)
   M._venv_cache[root_dir] = virtualenv_path
-  M._write_cache_to_file_debounced()
+  if not config.get().disable_cache then
+    M._write_cache_to_file_debounced()
+  end
 end
 
 ---In-memory cache wrapper for a function.
 ---@generic R
----@param cb fun(input_key: string): R|nil
+---@param cb fun(input_key: string): R
 ---@param cache_key string
----@return fun(input_key: string):R|nil
+---@return fun(input_key: string):R
 M.with_memcache = function(cb, cache_key)
   if not M._mem_cache[cache_key] then
     M._mem_cache[cache_key] = {}
