@@ -1,12 +1,14 @@
 local custom_os = require('venv-lsp.common.os')
 local Path = require('venv-lsp.common.path')
 local logger = require('venv-lsp.common.logger')
-local venv = require('venv-lsp.venv')
-local cache = require('venv-lsp.cache')
-local config = require('venv-lsp.config')
 local venv_managers = require('venv-lsp.venv_managers')
-local selector = require('venv-lsp.selector')
+local selectors = require('venv-lsp.selectors')
+local config = require('venv-lsp.config')
+local venv = require('venv-lsp.venv')
 local python = require('venv-lsp.python')
+local cache = require('venv-lsp.cache')
+
+local selector = selectors.get()
 
 ---@class VenvLspCommands
 ---@field _autocmd_venv_init boolean
@@ -68,7 +70,11 @@ function M.remove_venv()
     if not root_dir or root_dir == '' then
       return
     end
-    custom_os.set_venv(root_dir, nil)
+    local venv_path = venv_cache[root_dir]
+    cache.set_venv(root_dir, nil)
+    local msg =
+      string.format('Successfully removed virtual environment for root_dir: [%s] -> venv: [%s]', root_dir, venv_path)
+    logger.info(msg)
   end)
 end
 
