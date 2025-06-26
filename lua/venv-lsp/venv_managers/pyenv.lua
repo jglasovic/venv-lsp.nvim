@@ -1,6 +1,6 @@
 local custom_os = require('venv-lsp.common.os')
 local shell = require('venv-lsp.common.shell')
-local Path = require('venv-lsp.common.path')
+local path = require('venv-lsp.common.path')
 local python = require('venv-lsp.python')
 
 local Pyenv = {
@@ -19,9 +19,9 @@ function Pyenv.global_venv_paths()
   local pyenv_python_versions = shell.exec(cmd)
   if pyenv_python_versions then
     -- filter envs
-    for _, path in ipairs(pyenv_python_versions) do
-      if string.find(path, 'envs') then
-        table.insert(virtualenvs, Path(pyenv_root, path):get())
+    for _, envs_path in ipairs(pyenv_python_versions) do
+      if string.find(envs_path, 'envs') then
+        table.insert(virtualenvs, path.join(pyenv_root, envs_path))
       end
     end
   end
@@ -34,8 +34,8 @@ function Pyenv.is_venv(root_dir)
   if not root_dir or root_dir == vim.NIL then
     return false
   end
-  local python_version_path = Path(root_dir, '.python-version')
-  return python_version_path:exists()
+  local python_version_path = path.join(root_dir, '.python-version')
+  return path.exists(python_version_path)
 end
 
 ---@param root_dir string

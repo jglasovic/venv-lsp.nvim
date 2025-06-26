@@ -1,6 +1,7 @@
 local fs = require('venv-lsp.common.fs')
-local config = require('venv-lsp.config')
+local path = require('venv-lsp.common.path')
 local logger = require('venv-lsp.common.logger')
+local config = require('venv-lsp.config').get()
 
 local M = {
   _mem_cache = vim.empty_dict(),
@@ -44,8 +45,7 @@ M._write_cache_to_file_debounced = function()
   end
   M._pending_write = true
   vim.defer_fn(function()
-    local cache_json_path = config.get_cache_json_path()
-    M._write_cache_to_file_async(cache_json_path:get(), M._venv_cache, function(err_msg, _)
+    M._write_cache_to_file_async(config.cache_json_path, M._venv_cache, function(err_msg, _)
       M._pending_write = false
       if err_msg then
         logger.error(err_msg)
@@ -76,13 +76,11 @@ end
 ---Get the venv cache, reading from file if needed.
 ---@return table<string, string|nil>
 M.get_venv_cache = function()
-  local config_dict = config.get()
   if M._initial_read then
     return M._venv_cache
   end
-  if not config_dict.disable_cache then
-    local cache_json_path = config.get_cache_json_path()
-    local data = M._read_cache_from_file(cache_json_path:get())
+  if not config.disable_cache then
+    local data = M._read_cache_from_file(config.cache_json_path)
     if data then
       M._venv_cache = data
     end
@@ -114,6 +112,7 @@ end
 ---Initialize the cache by reading from file.
 ---@return nil
 M.init = function()
+  path.ensure_file_exists(config.cache_json_path)
   M.get_venv_cache()
 end
 
@@ -131,9 +130,10 @@ end
 ---@return nil
 M.set_venv = function(root_dir, virtualenv_path)
   M._venv_cache[root_dir] = virtualenv_path
-  if not config.get().disable_cache then
-    M._write_cache_to_file_debounced()
+  if config.disable_cache then
+    return
   end
+  M._write_cache_to_file_debounced()
 end
 
 ---In-memory cache wrapper for a function.

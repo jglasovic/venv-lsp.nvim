@@ -1,14 +1,11 @@
-local custom_os = require('venv-lsp.common.os')
-local Path = require('venv-lsp.common.path')
+local path = require('venv-lsp.common.path')
 local logger = require('venv-lsp.common.logger')
 local venv_managers = require('venv-lsp.venv_managers')
-local selectors = require('venv-lsp.selectors')
 local config = require('venv-lsp.config')
 local venv = require('venv-lsp.venv')
 local python = require('venv-lsp.python')
 local cache = require('venv-lsp.cache')
-
-local selector = selectors.get()
+local selector = require('venv-lsp.selectors').get()
 
 ---@class VenvLspCommands
 ---@field _autocmd_venv_init boolean
@@ -26,10 +23,8 @@ function M.add_venv()
     if not root_dir then
       return
     end
-    local root_dir_path = Path(root_dir)
-    root_dir_path:normalize()
-    root_dir = root_dir_path:get()
-    if not root_dir_path:exists() then
+    root_dir = path.normalize(root_dir)
+    if not path.exists(root_dir) then
       logger.error("Selected Root Directory doesn't exist: " .. root_dir)
       return
     end
@@ -38,11 +33,9 @@ function M.add_venv()
       if not virtualenv_path then
         return
       end
-      local venv_path = Path(virtualenv_path)
-      venv_path:normalize()
-      virtualenv_path = venv_path:get()
-      local venv_python_path = Path(python.get_python_path(virtualenv_path))
-      if not venv_python_path:exists() then
+      virtualenv_path = path.normalize(virtualenv_path)
+      local venv_python_path = python.get_python_path(virtualenv_path)
+      if not path.exists(venv_python_path) then
         logger.error("Python executable doesn't exist in selected virtual env path: " .. virtualenv_path)
       end
       cache.set_venv(root_dir, virtualenv_path)
@@ -86,16 +79,24 @@ function M.init_user_cmd()
 
   vim.api.nvim_create_user_command('VenvLspAddVenv', M.add_venv, { nargs = 0 })
   vim.api.nvim_create_user_command('VenvLspRemoveVenv', M.remove_venv, { nargs = 0 })
+  vim.api.nvim_create_user_command('VenvLspCacheDisable', function()
+    config.update({ disable_cache = true })
+    logger.info('VIRTUAL_ENV cache is disabled!')
+  end, { nargs = 0 })
+  vim.api.nvim_create_user_command('VenvLspCacheEnable', function()
+    config.update({ disable_cache = true })
+    logger.info('VIRTUAL_ENV Cache is enabled!')
+  end, { nargs = 0 })
   vim.api.nvim_create_user_command('VenvLspAutoDisable', function()
-    config.set_disable_auto_venv(true)
+    config.update({ disable_auto_venv = true })
     logger.info('Auto VIRTUAL_ENV detection is disabled!')
   end, { nargs = 0 })
   vim.api.nvim_create_user_command('VenvLspAutoEnable', function()
-    config.set_disable_auto_venv(false)
+    config.update({ disable_auto_venv = true })
     logger.info('Auto VIRTUAL_ENV detection is enabled!')
   end, { nargs = 0 })
   vim.api.nvim_create_user_command('VenvLspCacheFile', function()
-    vim.cmd.edit(config.get_cache_json_path():get())
+    vim.cmd.edit(config.get().cache_json_path)
   end, { nargs = 0 })
 
   M._usercmd_added = true

@@ -1,5 +1,5 @@
 local shell = require('venv-lsp.common.shell')
-local Path = require('venv-lsp.common.path')
+local path = require('venv-lsp.common.path')
 
 local Poetry = {
   _cmd = 'poetry',
@@ -10,10 +10,9 @@ local Poetry = {
 ---@return table
 function Poetry.global_venv_paths()
   local cmd = Poetry._cmd .. ' config --local virtualenvs.path'
-  local virtualenvs_path = shell.exec_str(cmd)
-  if virtualenvs_path then
-    local venv_dir = Path(virtualenvs_path)
-    return venv_dir:list('directory')
+  local venv_path = shell.exec_str(cmd)
+  if venv_path then
+    return path.list(venv_path, 'directory')
   end
   return {}
 end
@@ -24,8 +23,8 @@ function Poetry.is_venv(root_dir)
   if not root_dir or root_dir == vim.NIL then
     return false
   end
-  local poetry_lock_path = Path(root_dir, 'poetry.lock')
-  return poetry_lock_path:exists()
+  local poetry_lock_path = path.join(root_dir, 'poetry.lock')
+  return path.exists(poetry_lock_path)
 end
 
 ---@param root_dir string

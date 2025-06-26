@@ -1,4 +1,4 @@
-local Path = require('venv-lsp.common.path')
+local path = require('venv-lsp.common.path')
 local python = require('venv-lsp.python')
 
 local uv = (vim.uv or vim.loop)
@@ -22,16 +22,16 @@ function Local._get_venvs(root_dir)
   --     |__ Scripts/bin
   --         |__ python  <--- interpreterPath
   --
-  local venv_dir = Path(root_dir, 'venv')
-  local python_path_venv = Path(python.get_python_path(venv_dir:get()))
-  local dot_venv_dir = Path(root_dir, '.venv')
-  local python_path_dot_venv = Path(python.get_python_path(dot_venv_dir:get()))
+  local venv_dir = path.join(root_dir, 'venv')
+  local python_path_venv = python.get_python_path(venv_dir)
+  local dot_venv_dir = path.join(root_dir, '.venv')
+  local python_path_dot_venv = python.get_python_path(dot_venv_dir)
 
-  if venv_dir:exists() and python_path_venv:exists() then
-    table.insert(venvs, venv_dir:get())
+  if path.exists(python_path_venv) then
+    table.insert(venvs, venv_dir)
   end
-  if dot_venv_dir:exists() and python_path_dot_venv:exists() then
-    table.insert(venvs, dot_venv_dir:get())
+  if path.exists(python_path_dot_venv) then
+    table.insert(venvs, dot_venv_dir)
   end
   return venvs
 end
