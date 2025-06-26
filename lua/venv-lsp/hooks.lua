@@ -1,4 +1,4 @@
-local custom_os = require('venv-lsp.common.os')
+local common_os = require('venv-lsp.common.os')
 local venv = require('venv-lsp.venv')
 local python = require('venv-lsp.python')
 local venv_managers = require('venv-lsp.venv_managers')
@@ -30,7 +30,7 @@ function M.get_on_new_config(update_config)
       return
     end
     -- save current active venv
-    local previous_venv = custom_os.get_env('VIRTUAL_ENV')
+    local previous_venv = common_os.get_env('VIRTUAL_ENV')
     -- deactivate previous venv before searching for the new one
     venv.deactivate_virtualenv()
     local virtualenv_path = get_virtualenv(root_dir) or previous_venv

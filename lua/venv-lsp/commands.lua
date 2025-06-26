@@ -1,4 +1,4 @@
-local custom_os = require('venv-lsp.common.os')
+local common_os = require('venv-lsp.common.os')
 local path = require('venv-lsp.common.path')
 local logger = require('venv-lsp.common.logger')
 local venv_managers = require('venv-lsp.venv_managers')
@@ -24,7 +24,7 @@ local M = {
 ---@param dir string
 ---@return boolean
 local should_stop = function(dir)
-  local is_root = custom_os.is_win and dir:match('^%a:[/\\]?$') or dir == '/'
+  local is_root = common_os.is_win and dir:match('^%a:[/\\]?$') or dir == '/'
   return is_root or home_dir == dir or path.exists(path.join(dir, '.git'))
 end
 
@@ -41,7 +41,12 @@ function M.add_venv()
       logger.error("Selected Root Directory doesn't exist: " .. root_dir)
       return
     end
-    local venv_list = venv_managers.get_all_virtualenvs()
+
+    -- cache in memory
+    local venv_list = cache.with_memcache(function(_)
+      return venv_managers.get_all_virtualenvs()
+    end, 'global_venvs')('all')
+
     selector.select_venv_path(venv_list, function(virtualenv_path)
       if not virtualenv_path then
         return

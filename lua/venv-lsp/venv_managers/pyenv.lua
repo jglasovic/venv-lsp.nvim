@@ -1,4 +1,4 @@
-local custom_os = require('venv-lsp.common.os')
+local common_os = require('venv-lsp.common.os')
 local shell = require('venv-lsp.common.shell')
 local path = require('venv-lsp.common.path')
 local python = require('venv-lsp.python')
@@ -11,7 +11,7 @@ local M = {
 ---@return table
 function M.global_venv_paths()
   local virtualenvs = {}
-  local pyenv_root = custom_os.get_env('PYENV_ROOT') or custom_os.get_env('PYENV')
+  local pyenv_root = common_os.get_env('PYENV_ROOT') or common_os.get_env('PYENV')
   if not pyenv_root then
     return virtualenvs
   end

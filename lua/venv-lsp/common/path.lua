@@ -38,7 +38,7 @@ function M.ensure_file_exists(path)
   if M.exists(path) then
     return
   end
-  local dir = vim.fn.fnamemodify(path, ':h')
+  local dir = vim.fs.dirname(path)
   M.ensure_dir_exists(dir)
   if vim.fn.filereadable(path) == 0 then
     local f = io.open(path, 'w')
@@ -100,10 +100,10 @@ end
 ---@param include_stop_dir boolean|nil
 ---@return table
 function M.list_parents(path, should_stop, include_stop_dir)
-  local real = uv.fs_realpath(path) or path
+  path = M.normalize(path)
+  local is_dir = M.stat(path).type == 'directory'
+  local dir = is_dir and path or vim.fs.dirname(path)
   local dirs = {}
-
-  local dir = vim.fs.dirname(real)
   while dir and not should_stop(dir) do
     table.insert(dirs, dir)
     dir = vim.fs.dirname(dir)
