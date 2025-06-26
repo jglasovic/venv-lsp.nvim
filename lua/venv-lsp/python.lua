@@ -2,7 +2,7 @@ local custom_os = require('venv-lsp.common.os')
 local path = require('venv-lsp.common.path')
 
 local python_executable_path_suffix = custom_os.is_win and path.join('Scripts', 'python.exe')
-  or path.join('bin', 'python')
+    or path.join('bin', 'python')
 
 local M = {}
 

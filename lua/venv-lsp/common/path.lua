@@ -95,4 +95,25 @@ function M.list(path, only_type)
   return entries
 end
 
+---@param path string
+---@param should_stop fun(dir:string):boolean
+---@param include_stop_dir boolean|nil
+---@return table
+function M.list_parents(path, should_stop, include_stop_dir)
+  local real = uv.fs_realpath(path) or path
+  local dirs = {}
+
+  local dir = vim.fs.dirname(real)
+  while dir and not should_stop(dir) do
+    table.insert(dirs, dir)
+    dir = vim.fs.dirname(dir)
+  end
+
+  if include_stop_dir then
+    table.insert(dirs, dir)
+  end
+
+  return dirs
+end
+
 return M

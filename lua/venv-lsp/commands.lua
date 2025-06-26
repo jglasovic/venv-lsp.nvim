@@ -1,3 +1,4 @@
+local custom_os = require('venv-lsp.common.os')
 local path = require('venv-lsp.common.path')
 local logger = require('venv-lsp.common.logger')
 local venv_managers = require('venv-lsp.venv_managers')
@@ -7,6 +8,10 @@ local python = require('venv-lsp.python')
 local cache = require('venv-lsp.cache')
 local selector = require('venv-lsp.selectors').get()
 
+local uv = vim.uv or vim.loop
+
+local home_dir = uv.os_homedir()
+
 ---@class VenvLspCommands
 ---@field _autocmd_venv_init boolean
 ---@field _usercmd_init boolean
@@ -15,11 +20,19 @@ local M = {
   _usercmd_init = false,
 }
 
+---Stop at root or home dir or parent git dir
+---@param dir string
+---@return boolean
+local should_stop = function(dir)
+  local is_root = custom_os.is_win and dir:match('^%a:[/\\]?$') or dir == '/'
+  return is_root or home_dir == dir or path.exists(path.join(dir, '.git'))
+end
+
 ---Prompt user to add a venv mapping.
 ---@return nil
 function M.add_venv()
-  local current_dir = vim.fn.expand('%:p:h')
-  selector.select_root_dir_path(current_dir, function(root_dir)
+  local paths = path.list_parents(vim.api.nvim_buf_get_name(0), should_stop, true)
+  selector.select_root_dir_path(paths, function(root_dir)
     if not root_dir then
       return
     end

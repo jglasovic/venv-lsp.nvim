@@ -5,11 +5,11 @@ local M = {
   is_available = not not fzf_run,
 }
 
-function M.select_root_dir_path(default_root_dir, cb)
+function M.select_root_dir_path(paths, cb)
   fzf_run(fzf_wrap({
-    source = 'find ' .. vim.fn.shellescape(default_root_dir) .. ' -type d',
+    source = paths,
     sink = cb,
-    options = { '--prompt=Select Directory:', '--no-multi' },
+    options = { '--prompt=Select Root Dir: ', '--no-multi' },
   }))
 end
 
@@ -17,7 +17,7 @@ function M.select_venv_path(venvs, cb)
   fzf_run(fzf_wrap({
     source = venvs,
     sink = cb,
-    options = { '--prompt=Select Virtual Env:', '--no-multi' },
+    options = { '--prompt=Select Virtual Env: ', '--no-multi' },
   }))
 end
 

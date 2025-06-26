@@ -1,4 +1,4 @@
-local local_venv = require('venv-lsp.venv_managers.local')
+local local_venv = require('venv-lsp.venv_managers.local_venv')
 local poetry = require('venv-lsp.venv_managers.poetry')
 local pyenv = require('venv-lsp.venv_managers.pyenv')
 

@@ -10,22 +10,11 @@ if is_available then
   local actions = require('telescope.actions')
   local action_state = require('telescope.actions.state')
 
-  -- TODO: add faster way for searching dirs
-  local function scan_dirs(root)
-    local dirs = {}
-    local scan = require('plenary.scandir')
-    for _, dir in ipairs(scan.scan_dir(root, { only_dirs = true, respect_gitignore = true, depth = 5 })) do
-      table.insert(dirs, dir)
-    end
-    return dirs
-  end
-
-  function M.select_root_dir_path(default_root_dir, cb)
-    local dirs = scan_dirs(default_root_dir)
+  function M.select_root_dir_path(paths, cb)
     pickers
       .new({}, {
-        prompt_title = 'Select Directory',
-        finder = finders.new_table({ results = dirs }),
+        prompt_title = 'Select Root Dir: ',
+        finder = finders.new_table({ results = paths }),
         sorter = conf.generic_sorter({}),
         attach_mappings = function(prompt_bufnr, map)
           actions.select_default:replace(function()
@@ -44,7 +33,7 @@ if is_available then
   function M.select_venv_path(venvs, cb)
     pickers
       .new({}, {
-        prompt_title = 'Select Virtual Env',
+        prompt_title = 'Select Virtual Env: ',
         finder = finders.new_table({ results = venvs }),
         sorter = conf.generic_sorter({}),
         attach_mappings = function(prompt_bufnr, map)

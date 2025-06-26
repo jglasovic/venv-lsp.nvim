@@ -3,15 +3,15 @@ local python = require('venv-lsp.python')
 
 local uv = (vim.uv or vim.loop)
 
-local Local = {
+local M = {
   has_exec = true,
-  name = 'local',
+  name = 'local_venv',
   _cmd = '',
 }
 
 ---@param root_dir string|nil
 ---@return table
-function Local._get_venvs(root_dir)
+function M._get_venvs(root_dir)
   local venvs = {}
   if not root_dir or root_dir == vim.NIL then
     return {}
@@ -38,11 +38,11 @@ end
 
 ---@param root_dir string
 ---@return boolean
-function Local.is_venv(root_dir)
+function M.is_venv(root_dir)
   if not root_dir or root_dir == vim.NIL then
     return false
   end
-  local venvs = Local._get_venvs(root_dir)
+  local venvs = M._get_venvs(root_dir)
   if vim.tbl_isempty(venvs) then
     return false
   end
@@ -51,11 +51,11 @@ end
 
 ---@param root_dir string
 ---@return string|nil
-function Local.get_venv(root_dir)
+function M.get_venv(root_dir)
   if not root_dir or root_dir == vim.NIL then
     return nil
   end
-  local venvs = Local._get_venvs(root_dir)
+  local venvs = M._get_venvs(root_dir)
   if vim.tbl_isempty(venvs) then
     return nil
   end
@@ -65,9 +65,8 @@ end
 
 --- returning all local venvs if exists
 ---@return table
-function Local.global_venv_paths()
-  return Local._get_venvs(uv.cwd())
+function M.global_venv_paths()
+  return M._get_venvs(uv.cwd())
 end
 
----@type VenvManager
-return Local
+return M
