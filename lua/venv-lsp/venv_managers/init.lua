@@ -25,7 +25,8 @@ local filter_auto_venv_support = function(value)
 end
 
 local supported_venv_managers = vim.tbl_filter(filter_executable, venv_managers)
-local auto_detect_venv_supported_managers = vim.tbl_filter(filter_auto_venv_support, supported_venv_managers)
+local auto_detect_venv_supported_managers =
+  vim.tbl_filter(filter_auto_venv_support, supported_venv_managers)
 
 local M = {}
 

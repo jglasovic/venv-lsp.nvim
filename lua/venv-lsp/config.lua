@@ -30,7 +30,10 @@ M.update = function(config)
   if cache_json_path then
     if not path.is_ext(cache_json_path, '.json') then
       config.cache_json_path = M._cache_json_path:get()
-      logger.warn('Provided `cache_json_path` is not a valid json, using fallback path ' .. config.cache_json_path)
+      logger.warn(
+        'Provided `cache_json_path` is not a valid json, using fallback path '
+          .. config.cache_json_path
+      )
     end
   end
 

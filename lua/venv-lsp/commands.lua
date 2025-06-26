@@ -54,7 +54,9 @@ function M.add_venv()
       virtualenv_path = path.normalize(virtualenv_path)
       local venv_python_path = python.get_python_path(virtualenv_path)
       if not path.exists(venv_python_path) then
-        logger.error("Python executable doesn't exist in selected virtual env path: " .. virtualenv_path)
+        logger.error(
+          "Python executable doesn't exist in selected virtual env path: " .. virtualenv_path
+        )
       end
       cache.set_venv(root_dir, virtualenv_path)
       local msg = string.format(
@@ -83,8 +85,11 @@ function M.remove_venv()
     end
     local venv_path = venv_cache[root_dir]
     cache.set_venv(root_dir, nil)
-    local msg =
-      string.format('Successfully removed virtual environment for root_dir: [%s] -> venv: [%s]', root_dir, venv_path)
+    local msg = string.format(
+      'Successfully removed virtual environment for root_dir: [%s] -> venv: [%s]',
+      root_dir,
+      venv_path
+    )
     logger.info(msg)
   end)
 end
