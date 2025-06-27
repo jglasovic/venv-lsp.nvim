@@ -31,13 +31,4 @@ function M.activate_buffer()
   end
 end
 
----@return string
-function M.get_active_virtualenv()
-  local virtualenv = common_os.get_env('VIRTUAL_ENV')
-  if virtualenv then
-    return vim.fn.fnamemodify(virtualenv, ':t')
-  end
-  return ''
-end
-
 return M
