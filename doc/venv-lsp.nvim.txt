@@ -1,4 +1,4 @@
-*venv-lsp.nvim.txt*          For NVIM v0.8.0         Last change: 2025 June 23
+*venv-lsp.nvim.txt*          For NVIM v0.8.0         Last change: 2025 June 28
 
 ==============================================================================
 Table of Contents                            *venv-lsp.nvim-table-of-contents*
@@ -130,12 +130,16 @@ do so before calling `require("venv-lsp").setup()`:
 
 COMMANDS ~
 
-- `:VenvLspAutoDisable` — Disable automatic virtual environment detection.
-- `:VenvLspAutoEnable` — Enable automatic virtual environment detection.
-- `:VenvLspAddVenv` — Manually add a `<root dir path>` → `<virtual environment path>` mapping.
-    (You will be prompted to enter the root dir path and venv path.)
-- `:VenvLspRemoveVenv` — Remove the manually set `<root dir path>` → `<virtual environment path>` mapping.
-    (You will be prompted to select the root path to remove.)
+The following user commands are provided by `venv-lsp`:
+
+- `:VenvLspAddVenv` Prompt to add a virtual environment mapping for a project
+    root.
+- `:VenvLspRemoveVenv` Prompt to remove a virtual environment mapping.
+- `:VenvLspCacheDisable` Disable the virtual environment cache.
+- `:VenvLspCacheEnable` Enable the virtual environment cache.
+- `:VenvLspAutoDisable` Disable automatic virtual environment detection.
+- `:VenvLspAutoEnable` Enable automatic virtual environment detection.
+- `:VenvLspCacheFile` Open the cache file in the editor.
 
 
 CONFIGURATION                      *venv-lsp.nvim-venv-lsp.nvim-configuration*
@@ -144,15 +148,18 @@ You can pass a config table to `setup()` to customize behavior:
 
 >lua
     require("venv-lsp").setup({
-      disabled_auto_venv = false, -- (default) Set to true to disable automatic venv detection
-      cache_json_path = vim.fn.stdpath("cache") .. "/venv_lsp/cache.json", -- (default) Custom path for venv cache file
+      cache_json_path = vim.fn.stdpath('cache') .. '/venv_lsp/cache.json', -- (default) Custom path for venv cache file
+      disable_cache = false, -- (default) Set to true to disable reading/writing cached venv in json file (still uses in-memory cache)
+      disable_auto_venv = false, -- (default) Set to true to disable automatic venv detection
     })
 <
 
-- `disabled_auto_venv`: (boolean) If true, disables automatic virtual environment detection and activation.
+- `disable_auto_venv`: (boolean) If true, disables automatic virtual environment detection and activation.
+    Default: `false`
+- `disable_cache`: (boolean) If true, disables reading/writing cached venvs in the JSON file (still uses in-memory cache).
     Default: `false`
 - `cache_json_path`: (string) Path to the JSON file used for caching venv locations per project.
-    Default: `utils.path_join(vim.fn.stdpath("cache"), 'venv_lsp', 'cache.json')`
+    Default: `vim.fn.stdpath('cache') .. '/venv_lsp/cache.json'`
 
 
 HOW IT WORKS                        *venv-lsp.nvim-venv-lsp.nvim-how-it-works*
