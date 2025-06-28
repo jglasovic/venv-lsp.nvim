@@ -10,5 +10,10 @@
       "${3rd}/luv/library"
     ],
     "checkThirdParty": false
+  },
+  "diagnostics": {
+    "disable": [
+      "duplicate-set-field"
+    ]
   }
 }

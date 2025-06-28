@@ -1,24 +1,42 @@
-local utils = require('venv-lsp.utils')
+local shell = require('venv-lsp.common.shell')
+local path = require('venv-lsp.common.path')
 
-local M = {}
+local M = {
+  _cmd = 'poetry',
+  has_exec = vim.fn.executable('poetry') and true or false,
+  name = 'poetry',
+}
 
-function M.get_virtualenv_path(dir_path)
-  local cmd = 'poetry -C ' .. dir_path .. ' env info -p 2>/dev/null'
-  local virtualenv_path = vim.fn.trim(vim.fn.system(cmd))
-  if (vim.v.shell_error ~= 0) or not virtualenv_path then
-    return nil
+---@return table
+function M.global_venv_paths()
+  local cmd = M._cmd .. ' config virtualenvs.path'
+  local venv_path = shell.exec_str(cmd)
+  if venv_path then
+    return path.list(venv_path, 'directory')
   end
-  return virtualenv_path
+  return {}
 end
 
--- if poetry is executable and path has poetry.lock - use poetry
-function M.should_use(path)
-  if not path or path == vim.NIL then
+---@param root_dir string
+---@return boolean
+function M.is_venv(root_dir)
+  if not root_dir or root_dir == vim.NIL then
     return false
   end
-  local pyproject_path = utils.path_join(path, 'poetry.lock')
-  return utils.with_cache(vim.fn.executable, 'exec')('poetry')
-    and utils.with_cache(utils.path_exists, 'poetry_root')(pyproject_path)
+  local poetry_lock_path = path.join(root_dir, 'poetry.lock')
+  return path.exists(poetry_lock_path)
 end
 
+---@param root_dir string
+---@return string|nil
+function M.get_venv(root_dir)
+  local cmd = M._cmd .. ' env info -p 2>/dev/null'
+  local venv_path, code = shell.exec_str(cmd, root_dir)
+  if code or not venv_path then
+    return nil
+  end
+  return venv_path
+end
+
+---@type VenvManager
 return M
