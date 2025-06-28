@@ -3,6 +3,8 @@ local common_os = require('venv-lsp.common.os')
 
 local M = {}
 
+--- Returns the name of the currently active Python virtual environment.
+--- Useful for displaying the active venv in the statusline.
 ---@return string
 function M.active_virtualenv()
   local virtualenv = common_os.get_env('VIRTUAL_ENV')
@@ -13,7 +15,7 @@ function M.active_virtualenv()
 end
 
 M.setup = venv_lsp_setup.setup
---- @deprecated use `setup(<config: table|nil>)` instead of `init(<config: table|nil>)`
+---@deprecated use `setup(<config: table|nil>)` instead of `init(<config: table|nil>)`
 M.init = venv_lsp_setup.setup
 
 return M
