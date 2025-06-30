@@ -1,8 +1,6 @@
 local path = require('venv-lsp.common.path')
 local python = require('venv-lsp.python')
 
-local uv = (vim.uv or vim.loop)
-
 local M = {
   has_exec = true,
   name = 'local_venv',
@@ -18,20 +16,16 @@ function M._get_venvs(root_dir)
   end
   --
   -- project
-  -- |__ venv or .venv    <--- check if name of the folder is 'venv' or '.venv'
+  -- |__ venv or .venv or <named_venv_dir>    <--- check if there is a dir with /Scripts/python.exe or /bin/python
   --     |__ Scripts/bin
   --         |__ python  <--- interpreterPath
   --
-  local venv_dir = path.join(root_dir, 'venv')
-  local python_path_venv = python.get_python_path(venv_dir)
-  local dot_venv_dir = path.join(root_dir, '.venv')
-  local python_path_dot_venv = python.get_python_path(dot_venv_dir)
-
-  if path.exists(python_path_venv) then
-    table.insert(venvs, venv_dir)
-  end
-  if path.exists(python_path_dot_venv) then
-    table.insert(venvs, dot_venv_dir)
+  local project_dirs = path.list(root_dir, 'directory')
+  for _, dir in ipairs(project_dirs) do
+    local python_path_venv = python.get_python_path(dir)
+    if path.exists(python_path_venv) then
+      table.insert(venvs, dir)
+    end
   end
   return venvs
 end
@@ -65,8 +59,8 @@ end
 
 --- returning all local venvs if exists
 ---@return table
-function M.global_venv_paths()
-  return M._get_venvs(uv.cwd())
+function M.global_venv_paths(root_dir)
+  return M._get_venvs(root_dir)
 end
 
 return M

@@ -1,4 +1,5 @@
 local common_os = require('venv-lsp.common.os')
+local const = require('venv-lsp.common.constants')
 local path = require('venv-lsp.common.path')
 local logger = require('venv-lsp.common.logger')
 local venv_managers = require('venv-lsp.venv_managers')
@@ -6,7 +7,7 @@ local config = require('venv-lsp.config')
 local venv = require('venv-lsp.venv')
 local python = require('venv-lsp.python')
 local cache = require('venv-lsp.cache')
-local selector = require('venv-lsp.selectors').get()
+local selector = require('venv-lsp.selectors')
 
 local uv = vim.uv or vim.loop
 
@@ -31,42 +32,56 @@ end
 ---Prompt user to add a venv mapping.
 ---@return nil
 function M.add_venv()
-  local paths = path.list_parents(vim.api.nvim_buf_get_name(0), should_stop, true)
-  selector.select_root_dir_path(paths, function(root_dir)
-    if not root_dir then
-      return
-    end
-    root_dir = path.normalize(root_dir)
-    if not path.exists(root_dir) then
-      logger.error("Selected Root Directory doesn't exist: " .. root_dir)
-      return
-    end
+  local buf_name = vim.api.nvim_buf_get_name(0)
+  local paths = path.list_parents(buf_name, should_stop, true)
+  local root_dir = selector.select_root_dir_path(
+    paths,
+    { { key = 'ctrl-e', value = const.selector.custom, description = 'Add custom root path' } }
+  )
+  if root_dir == const.selector.custom then
+    root_dir = selector.add_root_dir_path(buf_name)
+  end
+  if not root_dir then
+    return
+  end
+  root_dir = path.normalize(root_dir)
+  if not path.exists(root_dir) then
+    logger.error("Selected Root Directory doesn't exist: " .. root_dir)
+    return
+  end
 
-    -- cache in memory
-    local venv_list = cache.with_memcache(function(_)
-      return venv_managers.get_all_virtualenvs()
-    end, 'global_venvs')('all')
+  local initial_run = true
+  local virtualenv_path = nil
 
-    selector.select_venv_path(venv_list, function(virtualenv_path)
-      if not virtualenv_path then
-        return
-      end
-      virtualenv_path = path.normalize(virtualenv_path)
-      local venv_python_path = python.get_python_path(virtualenv_path)
-      if not path.exists(venv_python_path) then
-        logger.error(
-          "Python executable doesn't exist in selected virtual env path: " .. virtualenv_path
-        )
-      end
-      cache.set_venv(root_dir, virtualenv_path)
-      local msg = string.format(
-        'Successfully added virtual environment for root_dir: [%s] -> venv: [%s]',
-        root_dir,
-        virtualenv_path
-      )
-      logger.info(msg)
-    end)
-  end)
+  while initial_run or virtualenv_path == const.selector.resart do
+    initial_run = false
+    local venv_list =
+      venv_managers.get_all_virtualenvs(root_dir, virtualenv_path == const.selector.resart)
+    virtualenv_path = selector.select_venv_path(venv_list, {
+      { key = 'ctrl-e', value = const.selector.custom, description = 'Add custom venv path' },
+      { key = 'ctrl-r', value = const.selector.resart, description = 'Restart' },
+    })
+  end
+  if virtualenv_path == const.selector.custom then
+    virtualenv_path = selector.add_venv_path(common_os.get_env('VIRTUAL_ENV') or '')
+  end
+  if not virtualenv_path then
+    return
+  end
+  virtualenv_path = path.normalize(virtualenv_path)
+  local venv_python_path = python.get_python_path(virtualenv_path)
+  if not path.exists(venv_python_path) then
+    logger.error(
+      "Python executable doesn't exist in selected virtual env path: " .. virtualenv_path
+    )
+  end
+  cache.set_venv(root_dir, virtualenv_path)
+  local msg = string.format(
+    'Successfully added virtual environment for root_dir: [%s] -> venv: [%s]',
+    root_dir,
+    virtualenv_path
+  )
+  logger.info(msg)
 end
 
 ---Prompt user to remove a venv mapping.
@@ -100,7 +115,9 @@ function M.init_user_cmd()
     return
   end
 
-  vim.api.nvim_create_user_command('VenvLspAddVenv', M.add_venv, { nargs = 0 })
+  vim.api.nvim_create_user_command('VenvLspAddVenv', function()
+    coroutine.wrap(M.add_venv)()
+  end, { nargs = 0 })
   vim.api.nvim_create_user_command('VenvLspRemoveVenv', M.remove_venv, { nargs = 0 })
   vim.api.nvim_create_user_command('VenvLspCacheDisable', function()
     config.update({ disable_cache = true })

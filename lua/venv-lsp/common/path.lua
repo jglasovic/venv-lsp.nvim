@@ -1,12 +1,14 @@
 local uv = (vim.uv or vim.loop)
-local _path_separator = package.config:sub(1, 1)
+local path_separator = package.config:sub(1, 1)
 
-local M = {}
+local M = {
+  path_separator = path_separator,
+}
 
 ---@param ... string
 ---@return string
 function M.join(...)
-  local path = table.concat({ ... }, _path_separator)
+  local path = table.concat({ ... }, path_separator)
   return path
 end
 

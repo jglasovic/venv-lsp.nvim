@@ -1,4 +1,5 @@
 local common_os = require('venv-lsp.common.os')
+local const = require('venv-lsp.common.constants')
 local venv = require('venv-lsp.venv')
 local python = require('venv-lsp.python')
 local venv_managers = require('venv-lsp.venv_managers')
@@ -40,7 +41,7 @@ function M.get_on_new_config(update_config)
       update_config(new_config, python_path)
       venv.activate_virtualenv(virtualenv_path)
       -- store venv_path value for on attach to save it on buffer
-      new_config._custom_venv_path = virtualenv_path
+      new_config[const.lsp.custom_venv] = virtualenv_path
     end
   end
 end
@@ -49,7 +50,7 @@ end
 ---@param bufnr integer
 ---@return nil
 function M.on_attach(client, bufnr)
-  local venv_path = vim.tbl_get(client, 'config', '_custom_venv_path')
+  local venv_path = vim.tbl_get(client, 'config', const.lsp.custom_venv)
   if venv_path then
     vim.api.nvim_buf_set_var(bufnr, 'VIRTUAL_ENV', venv_path)
     venv.activate_buffer()

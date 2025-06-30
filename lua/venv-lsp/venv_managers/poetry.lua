@@ -8,7 +8,7 @@ local M = {
 }
 
 ---@return table
-function M.global_venv_paths()
+function M.global_venv_paths(_)
   local cmd = M._cmd .. ' config virtualenvs.path'
   local venv_path = shell.exec_str(cmd)
   if venv_path then

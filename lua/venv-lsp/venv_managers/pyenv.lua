@@ -9,7 +9,7 @@ local M = {
   name = 'pyenv',
 }
 ---@return table
-function M.global_venv_paths()
+function M.global_venv_paths(_)
   local virtualenvs = {}
   local pyenv_root = common_os.get_env('PYENV_ROOT') or common_os.get_env('PYENV')
   if not pyenv_root then

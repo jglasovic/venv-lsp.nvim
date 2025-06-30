@@ -95,7 +95,8 @@ end
 M.get_root_dir_by_fname = function(fname)
   local buf_dir = vim.fn.fnamemodify(fname, ':p:h')
   for dir_path, _ in pairs(M.get_venv_cache()) do
-    if buf_dir:sub(1, #dir_path) == dir_path then
+    local dir_path_ends_with_separator = dir_path .. path.path_separator
+    if buf_dir:sub(1, #dir_path_ends_with_separator) == dir_path_ends_with_separator then
       return dir_path
     end
   end
@@ -156,6 +157,10 @@ M.with_memcache = function(cb, cache_key)
     end
     return M._mem_cache[cache_key][input_key]
   end
+end
+
+M.reset_memcache = function(cache_key)
+  M._mem_cache[cache_key] = {}
 end
 
 return M
