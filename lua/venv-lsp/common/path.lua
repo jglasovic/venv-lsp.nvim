@@ -118,4 +118,16 @@ function M.list_parents(path, should_stop, include_stop_dir)
   return dirs
 end
 
+---Compare if the file_path belongs to the dir_path
+---@param dir_path string
+---@param file_path string|nil
+---@return boolean
+function M.compare(dir_path, file_path)
+  if not file_path or file_path == '' then
+    return false
+  end
+  local dir_path_ends_with_separator = dir_path .. path_separator
+  return file_path:sub(1, #dir_path_ends_with_separator) == dir_path_ends_with_separator
+end
+
 return M

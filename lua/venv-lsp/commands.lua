@@ -8,6 +8,7 @@ local venv = require('venv-lsp.venv')
 local python = require('venv-lsp.python')
 local cache = require('venv-lsp.cache')
 local selector = require('venv-lsp.selectors')
+local lsp_client = require('venv-lsp.lsp_client')
 
 local uv = vim.uv or vim.loop
 
@@ -53,13 +54,13 @@ function M.add_venv()
   local initial_run = true
   local virtualenv_path = nil
 
-  while initial_run or virtualenv_path == const.selector.resart do
+  while initial_run or virtualenv_path == const.selector.refresh do
     initial_run = false
     local venv_list =
-      venv_managers.get_all_virtualenvs(root_dir, virtualenv_path == const.selector.resart)
+      venv_managers.get_all_virtualenvs(root_dir, virtualenv_path == const.selector.refresh)
     virtualenv_path = selector.select_venv_path(venv_list, {
       { key = 'ctrl-e', value = const.selector.custom, description = 'Add custom venv path' },
-      { key = 'ctrl-r', value = const.selector.resart, description = 'Restart' },
+      { key = 'ctrl-r', value = const.selector.refresh, description = 'Refresh list' },
     })
   end
   if virtualenv_path == const.selector.custom then
@@ -76,6 +77,8 @@ function M.add_venv()
     )
   end
   cache.set_venv(root_dir, virtualenv_path)
+  -- restart attached buffers for root dir
+  lsp_client.restart_for_root_dir(root_dir)
   local msg = string.format(
     'Successfully added virtual environment for root_dir: [%s] -> venv: [%s]',
     root_dir,

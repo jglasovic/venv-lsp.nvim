@@ -30,7 +30,7 @@ if is_available then
   local action_state = require('telescope.actions.state')
 
   ---@param paths string[]
-  ---@param cb fun(value:string):nil
+  ---@param cb fun(value:string|nil):nil
   ---@param custom_mappings KeyMapping[]|nil
   function M.select_root_dir_path(paths, cb, custom_mappings)
     pickers
@@ -42,8 +42,6 @@ if is_available then
           if custom_mappings then
             for _, mapping in ipairs(custom_mappings) do
               local key = remap_ctrl(mapping.key)
-              print(mapping.key)
-              print(key)
               map('i', key, function()
                 actions.close(prompt_bufnr)
                 cb(mapping.value)
@@ -68,7 +66,7 @@ if is_available then
   end
 
   ---@param venvs string[]
-  ---@param cb fun(value:string):nil
+  ---@param cb fun(value:string|nil):nil
   ---@param custom_mappings KeyMapping[]|nil
   function M.select_venv_path(venvs, cb, custom_mappings)
     pickers

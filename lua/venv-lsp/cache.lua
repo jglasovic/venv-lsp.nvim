@@ -93,10 +93,8 @@ end
 ---@param fname string
 ---@return string|nil
 M.get_root_dir_by_fname = function(fname)
-  local buf_dir = vim.fn.fnamemodify(fname, ':p:h')
   for dir_path, _ in pairs(M.get_venv_cache()) do
-    local dir_path_ends_with_separator = dir_path .. path.path_separator
-    if buf_dir:sub(1, #dir_path_ends_with_separator) == dir_path_ends_with_separator then
+    if path.compare(dir_path, fname) then
       return dir_path
     end
   end

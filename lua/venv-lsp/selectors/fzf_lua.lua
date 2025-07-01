@@ -4,6 +4,7 @@ local M = { is_available = is_available }
 
 ---@param prompt string
 ---@param custom_mappings KeyMapping[]|nil
+---@param cb fun(input:string|nil):nil
 local get_options = function(prompt, custom_mappings, cb)
   local options = {
     prompt = prompt .. '> ',
@@ -39,11 +40,18 @@ end
 
 if is_available then
   local fzf_lua = require('fzf-lua')
+
+  ---@param paths string[]
+  ---@param cb fun(value:string|nil):nil
+  ---@param custom_mappings KeyMapping[]|nil
   function M.select_root_dir_path(paths, cb, custom_mappings)
     local opts = get_options('Select Root Dir', custom_mappings, cb)
     fzf_lua.fzf_exec(paths, opts)
   end
 
+  ---@param venvs string[]
+  ---@param cb fun(value:string|nil):nil
+  ---@param custom_mappings KeyMapping[]|nil
   function M.select_venv_path(venvs, cb, custom_mappings)
     local opts = get_options('Select Virtual Env', custom_mappings, cb)
     fzf_lua.fzf_exec(venvs, opts)

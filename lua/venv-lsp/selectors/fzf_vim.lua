@@ -2,7 +2,7 @@ local fzf_run = vim.fn['fzf#run']
 local fzf_wrap = vim.fn['fzf#wrap']
 
 local M = {
-  is_available = not not (fzf_run and fzf_wrap),
+  is_available = vim.fn.exists(':FZF'),
 }
 
 ---@param prompt string
@@ -30,7 +30,7 @@ local get_options = function(prompt, custom_mappings)
 end
 
 ---@param paths string[]
----@param cb fun(value:string):nil
+---@param cb fun(value:string|nil):nil
 ---@param custom_mappings KeyMapping[]|nil
 function M.select_root_dir_path(paths, cb, custom_mappings)
   local options = get_options('Select Root Dir', custom_mappings)
@@ -42,7 +42,7 @@ function M.select_root_dir_path(paths, cb, custom_mappings)
 end
 
 ---@param venvs string[]
----@param cb fun(value:string):nil
+---@param cb fun(value:string|nil):nil
 ---@param custom_mappings KeyMapping[]|nil
 function M.select_venv_path(venvs, cb, custom_mappings)
   local options = get_options('Select Virtual Env', custom_mappings)

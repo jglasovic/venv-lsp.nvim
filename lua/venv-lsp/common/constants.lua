@@ -3,7 +3,7 @@ local M = {
     custom_venv = '_custom_venv',
   },
   selector = {
-    resart = 'RESTART',
+    refresh = 'REFRESH',
     custom = 'CUSTOM',
   },
 }
