@@ -2,7 +2,6 @@ local common_os = require('venv-lsp.common.os')
 local const = require('venv-lsp.common.constants')
 local path = require('venv-lsp.common.path')
 local logger = require('venv-lsp.common.logger')
-local venv_managers = require('venv-lsp.venv_managers')
 local config = require('venv-lsp.config')
 local venv = require('venv-lsp.venv')
 local python = require('venv-lsp.python')
@@ -56,12 +55,12 @@ function M.add_venv()
 
   while initial_run or virtualenv_path == const.selector.refresh do
     initial_run = false
-    local venv_list =
-      venv_managers.get_all_virtualenvs(root_dir, virtualenv_path == const.selector.refresh)
-    virtualenv_path = selector.select_venv_path(venv_list, {
-      { key = 'ctrl-e', value = const.selector.custom, description = 'Add custom venv path' },
-      { key = 'ctrl-r', value = const.selector.refresh, description = 'Refresh list' },
-    })
+    -- local venv_list =
+    --   venv_managers.get_all_virtualenvs(root_dir, virtualenv_path == const.selector.refresh)
+    -- virtualenv_path = selector.select_venv_path(venv_list, {
+    --   { key = 'ctrl-e', value = const.selector.custom, description = 'Add custom venv path' },
+    --   { key = 'ctrl-r', value = const.selector.refresh, description = 'Refresh list' },
+    -- })
   end
   if virtualenv_path == const.selector.custom then
     virtualenv_path = selector.add_venv_path(common_os.get_env('VIRTUAL_ENV') or '')
