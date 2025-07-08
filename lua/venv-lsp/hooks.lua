@@ -2,9 +2,9 @@ local common_os = require('venv-lsp.common.os')
 local const = require('venv-lsp.common.constants')
 local venv = require('venv-lsp.venv')
 local python = require('venv-lsp.python')
-local venv_managers = require('venv-lsp.venv_managers')
 local cache = require('venv-lsp.cache')
 local config = require('venv-lsp.config').get()
+local venvdetect = require('venv-lsp.venvdetect')
 
 ---@param root_dir string
 ---@return string|nil
@@ -14,7 +14,7 @@ local get_virtualenv = function(root_dir)
   if virtualenv_path then
     return virtualenv_path
   end
-  virtualenv_path = venv_managers.auto_detect_virtualenv(root_dir)
+  virtualenv_path = venvdetect.auto_detect_virtualenv(root_dir)
   if virtualenv_path then
     cache.set_venv(root_dir, virtualenv_path)
   end
